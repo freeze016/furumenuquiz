@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квиз по меню 居瑠団 (Режимы, Адаптивность)</title>
+    <!-- Загрузка Tailwind CSS для стилизации -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Настройка шрифта Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        /* Стили для кнопки с анимацией */
+        .option-button {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            min-height: 5rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            text-align: left;
+        }
+        .option-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+        /* Стиль для правильного ответа */
+        .correct {
+            background-color: #34d399 !important; /* green-400 */
+            color: white !important;
+            border-color: #10b981 !important;
+        }
+        /* Стиль для неправильного ответа */
+        .incorrect {
+            background-color: #f87171 !important; /* red-400 */
+            color: white !important;
+            border-color: #ef4444 !important;
+        }
+        .disabled {
+            opacity: 0.9;
+            cursor: not-allowed;
+        }
+        /* Измененный стиль для контейнера изображения, чтобы обеспечить гибкость */
+        #dish-image-container {
+             /* Минимальная высота на моб. устройствах, чтобы не было слишком маленьким */
+            min-height: 16rem; 
+            /* Максимальная высота для больших экранов */
+            max-height: 24rem; 
+        }
+        /* Изображение будет содержаться (contain) внутри контейнера, сохраняя аспект */
+        #dish-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* Ключевое изменение: объект будет полностью помещаться, не обрезаясь */
+        }
+    </style>
+</head>
+<body class="p-4">
+
+    <!-- Главный контейнер -->
+    <div class="w-full max-w-2xl bg-white rounded-xl shadow-2xl p-6 md:p-8">
+        
+        <h1 class="text-3xl font-bold text-gray-800 text-center mb-6">Квиз: Учим Меню (100 блюд)</h1>
+        
+        <!-- 1. СТАРТОВЫЙ ЭКРАН -->
+        <div id="start-screen" class="space-y-6">
+            <h2 class="text-2xl font-semibold text-indigo-600 mb-4">Выберите режим обучения</h2>
+            
+            <!-- Выбор категории -->
+            <div>
+                <label for="category-select" class="block text-lg font-medium text-gray-700 mb-2">Категория блюд:</label>
+                <select id="category-select" class="w-full p-3 border-2 border-indigo-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
+                    <option value="ALL">Все блюда (100)</option>
+                    <!-- Опции будут добавлены через JS -->
+                </select>
+            </div>
+
+            <!-- Выбор количества вопросов -->
+            <div>
+                <p class="block text-lg font-medium text-gray-700 mb-2">Количество вопросов:</p>
+                <div id="quantity-options" class="grid grid-cols-3 gap-3">
+                    <button data-quantity="25" class="quantity-button py-3 px-4 bg-indigo-100 text-indigo-700 font-semibold rounded-lg hover:bg-indigo-200 transition duration-150 border-2 border-transparent focus:border-indigo-500">25</button>
+                    <button data-quantity="50" class="quantity-button py-3 px-4 bg-indigo-100 text-indigo-700 font-semibold rounded-lg hover:bg-indigo-200 transition duration-150 border-2 border-transparent focus:border-indigo-500">50</button>
+                    <button data-quantity="ALL" class="quantity-button py-3 px-4 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-600 transition duration-150 border-2 border-transparent">Все</button>
+                </div>
+                <p id="selected-count-info" class="text-sm text-gray-500 mt-2">Выбрано: 100 вопросов</p>
+            </div>
+
+            <!-- Кнопка старта -->
+            <button id="start-quiz-button" class="w-full py-4 bg-green-500 text-white font-bold text-xl rounded-lg shadow-md hover:bg-green-600 transition duration-300">
+                Начать квиз!
+            </button>
+        </div>
+
+        <!-- 2. ГЛАВНЫЙ КОНТЕЙНЕР КВИЗА -->
+        <div id="quiz-container" class="space-y-6 hidden">
+            <!-- Счёт и прогресс -->
+            <div id="progress" class="text-center text-sm font-medium text-gray-600">
+                Вопрос <span id="current-index">1</span> из <span id="total-questions">100</span>
+            </div>
+
+            <!-- Область отображения блюда -->
+            <div id="dish-image-container" class="border-2 border-gray-200 rounded-lg p-2 bg-gray-100 flex items-center justify-center">
+                <!-- Изображение -->
+                <img id="dish-image" src="https://placehold.co/600x400/CCCCCC/333333?text=Загрузите+фото" alt="Изображение блюда">
+            </div>
+            
+            <!-- Варианты ответов -->
+            <div id="options-container" class="space-y-3">
+                <!-- Кнопки будут добавлены сюда через JS -->
+            </div>
+
+            <!-- Кнопка "Следующее блюдо" -->
+            <button id="next-button" class="w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                Следующее блюдо
+            </button>
+        </div>
+
+        <!-- Модальное окно для результатов -->
+        <div id="results-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden items-center justify-center p-4 z-50">
+            <div class="bg-white rounded-xl p-8 max-w-md w-full text-center shadow-2xl">
+                <h2 class="text-3xl font-bold text-indigo-600 mb-4">Квиз завершен!</h2>
+                <p class="text-lg text-gray-700 mb-6">Ваш результат: <span id="final-score" class="font-extrabold text-4xl"></span> / <span id="max-score"></span></p>
+                <button id="restart-button" class="py-3 px-6 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-300">
+                    Начать заново
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. МАССИВ БЛЮД С КАТЕГОРИЯМИ ---
+        const dishes = [
+            // ЗАКУСКИ (Appetizers, Pages 3-4)
+            { category: "ЗАКУСКИ", name: "TORI NO NANKOTSU", description: "Жареные куриные хрящики", image: "img/torinonankotsu.ppg" },
+            { category: "ЗАКУСКИ", name: "KAWAEBI KARAAGE", description: "Жареные хрустящие речные креветки", image: "img/kawaebikaraage.png" },
+            { category: "ЗАКУСКИ", name: "EDAMAME", description: "Варенные в стручках соевые бобы", image: "img/edamame.png" },
+            { category: "ЗАКУСКИ", name: "HOURENSOU OHITASHI", description: "Вареный шпинат с кислой заправкой и рыбными стружками", image: "img/hourensou.png" },
+            { category: "ЗАКУСКИ", name: "KIMCHI", description: "Остро приправленная квашеная капуста (Корейская)", image: "img/kimchi.png" },
+            { category: "ЗАКУСКИ", name: "DASHIMAKI", description: "Яичный омлет по-японски", image: "img/dashimaki.png" },
+            { category: "ЗАКУСКИ", name: "CHEESE STICKS", description: "Жаренные сырные палочки", image: "img/cheesesticks.png" },
+            { category: "ЗАКУСКИ", name: "AGEDSHI TOFU", description: "Жареный тофу в горячем бульоне с рыбными стружками", image: "img/agedashitofu.png" },
+            { category: "ЗАКУСКИ", name: "AGEDSHI NASU", description: "Варёные баклажаны в соевом соусе с рыбными стружками", image: "img/agedashinasu.png" },
+            { category: "ЗАКУСКИ", name: "CHINGENSAI", description: "Жареный чингсай с кунжутным маслом. Чеснок по желанию", image: "img/chingensai.png" },
+            { category: "ЗАКУСКИ", name: "INGEN GOMAAE", description: "Вареная зелёная фасоль с кунжутом", image: "img/ingengomaae.png" },
+            { category: "ЗАКУСКИ", name: "NINNIKU NO MARUAGE", description: "Жареный целиком чеснок", image: "img/ninnikumaruage.png" },
+            { category: "ЗАКУСКИ", name: "JA JA MOYASHI", description: "Ростки фасоли с говяжьим фаршем, джусаем и пастой мисо", image: "img/jajamoyashi.png" },
+            
+            // БЛЮДА С ТОФУ (Tofu, Page 7)
+            { category: "ТОФУ", name: "TOFUMISO KATSU", description: "Жареный тофу в панировочных сухарях с мисо соусом", image: "img/tofumisokatsu.png" },
+            { category: "ТОФУ", name: "GANMODOKI", description: "Оладьи из тофу с овощами, маринованным имбирем и кунжутом", image: "img/ganmodoki.png" },
+            { category: "ТОФУ", name: "KIMCHI TOFU", description: "Кимчи, жареный тофу, редька, зеленый лук, мисо соус", image: "img/kimchitofu.png" },
+            { category: "ТОФУ", name: "ATSUAGE", description: "Жареный тофу, зеленый лук, рыбные стружки, имбирь", image: "img/atsuage.png" },
+
+            // САЛАТЫ (Salad, Pages 5-6)
+            { category: "САЛАТЫ", name: "MUSHI EBI SALAD", description: "Варенные на пару креветки под острым соусом из помидора и чеснока", image: "img/mushiebi.png" },
+            { category: "САЛАТЫ", name: "RUCKOLA SALAD", description: "Руккола, овощи по-сезону", image: "img/ruckolasld.png" },
+            { category: "САЛАТЫ", name: "SABA SALAD", description: "Маринованная скумбрия и овощи по сезону", image: "img/sabasld.png" },
+            { category: "САЛАТЫ", name: "SAMARA SALAD", description: "Черный гриб, шпинат, маринованный редис, горчичный соус", image: "img/samarasld.png" },
+            { category: "САЛАТЫ", name: "SUNOMONO", description: "Огурцы и водоросли заправленные уксусом и имбирем", image: "img/sunomomo.png" },
+            { category: "САЛАТЫ", name: "ONION SALAD", description: "Луковый салат с рыбными стружками и хрустиками", image: "img/onionsld.png" },
+            { category: "САЛАТЫ", name: "ROAST BEEF SALAD", description: "Ростбиф и сезонные овощи, заправленные соусом васаби", image: "img/roastbfsld.png" },
+            { category: "САЛАТЫ", name: "NORIMAKI SALAD", description: "Овощи, курица, водоросли. Заверните свой ролл", image: "img/norimakisld.png" },
+            { category: "САЛАТЫ", name: "BAKI SALAD", description: "Жареная кожица лосося, помидоры, огурцы, лук, водоросли в кисло-остром соусе", image: "img/bakisld.png" },
+            { category: "САЛАТЫ", name: "NAMUL", description: "Ростки фасоли и шпинат", image: "img/namul.png" },
+            { category: "САЛАТЫ", name: "CHUUKA SALAD", description: "Водоросли с кунжутным соусом", image: "img/chuukasld.png" },
+            { category: "САЛАТЫ", name: "TUNA SALAD", description: "Консервированный тунец, огурцы, помидоры, листья салата, капуста", image: "img/tunasld.png" },
+            { category: "САЛАТЫ", name: "GURYA SALAD", description: "Острый салат из капусты с кунжутным маслом и джусаем", image: "img/guryasld.png" },
+            { category: "САЛАТЫ", name: "KYABETSU SALAD", description: "Салат из капусты по-японски с рыбными стружками и майонезом", image: "img/kyabetsusld.png" },
+
+            // РАМЕН (Ramen, Page 8)
+            { category: "РАМЕН", name: "OYAKATA RAMEN", description: "Суп на бульоне из рыбы, курицы, соевого соуса и грибов с говядиной/курицей", image: "img/oyakataramen.png" },
+            { category: "РАМЕН", name: "TAN-TAN MEN", description: "Острый суп-лапша с рубленной говядиной/курицей и имбирем", image: "img/tantanmen.png" },
+            { category: "РАМЕН", name: "GYUKOTYSU RAMEN", description: "Суп-лапша с наваристым говяжьим бульоном, мясом чашу, грибами и яйцом", image: "img/gyukotsuramen.png" },
+            { category: "РАМЕН", name: "MISO RAMEN", description: "Острый суп с лапшой и овощами на бульоне мисо с курицей/морепродуктами", image: "img/misoramen.png" },
+            { category: "РАМЕН", name: "SANRAATAN", description: "Кисло-Острый суп с лапшой, тофу, яйцом, овощами и курицейя/морепродуктами", image: "img/snrataan.png" },
+
+            // УДОН В КОТЕЛКЕ (Nabeyaki Udon, Page 9)
+            { category: "УДОН В КОТЕЛКЕ", name: "NABEYAKI UDON", description: "Суп в котелке с удоном, крабовыми палочками, креветками, курицей, овощами и яйцом", image: "img/nu.png" },
+            { category: "УДОН В КОТЕЛКЕ", name: "MISONIKOMI UDON", description: "Удон суп на основе мисо", image: "img/misonikomiudon.png" },
+            { category: "УДОН В КОТЕЛКЕ", name: "EBITEN NABEYAKI UDON", description: "Набэяки удон с темпурой из креветок", image: "img/ebitennu.png" },
+            { category: "УДОН В КОТЕЛКЕ", name: "KAISIEN NABEYAKI UDON", description: "Набэяки удон с морепродуктами", image: "img/kaisennu" },
+            { category: "УДОН В КОТЕЛКЕ", name: "CURRY NABEYAKI UDON", description: "Набэяки удон на основе карри", image: "img/currynu.png" },
+
+            // ЛАПША СОБА/УДОН (Soba/Udon, Page 10)
+            { category: "СОБА/УДОН", name: "EBITEN SOBA", description: "Суп с гречневой лапшой соба, темпурой из креветок и зеленым луком", image: "img/ebitensoba.png" },
+            { category: "СОБА/УДОН", name: "CURRY SOUP (Udon/Soba)", description: "Суп карри с лапшой, жареным тофу, луком-пореем и курицей", image: "img/currysoup.png" },
+            { category: "СОБА/УДОН", name: "KAKIAGE (Udon/Soba)", description: "Хрустящая темпура из овощей и суп с лапшой", image: "img/kakiage.png" },
+            { category: "СОБА/УДОН", name: "ZARU SOBA", description: "Холодная гречневая лапша с бульоном из соевого соуса для обмакивания", image: "img/zarusoba.png" },
+            { category: "СОБА/УДОН", name: "TORISEIRO (Udon/Soba)", description: "Лапша с курицей и луком-пореем (подается отдельно)", image: "img/toriseiro.png" },
+            { category: "СОБА/УДОН", name: "TORI NANBAN (Udon/Soba)", description: "Лапша с курицей и луком-пореем в горячем супе", image: "img/torinanban.png" },
+
+            // ТЕМПУРА (Tempura, Page 11)
+            { category: "ТЕМПУРА", name: "TENZARU", description: "Холодная гречневая лапша соба и ассорти из темпуры (креветки, грибы, овощи)", image: "img/tenzaru.png" },
+            { category: "ТЕМПУРА", name: "EBITENDON", description: "Рис с темпурой из креветок и соусом", image: "img/ebitendon.png" },
+            { category: "ТЕМПУРА", name: "TENDON", description: "Чашка риса с ассорти из темпуры (креветки, грибы, овощи) с соусом темпура", image: "img/tendon.png" },
+            { category: "ТЕМПУРА", name: "TEMPURA (Assorted)", description: "Ассорти из темпуры (креветки, грибы, овощи по-сезону)", image: "img/tempura.png" },
+            
+            // БЛЮДА В ЧАШКЕ С РИСОМ (Donburi, Page 12)
+            { category: "ДОНБУРИ", name: "KIMCHI CHICKEN KATSUDON", description: "Рис с жареной куриной котлетой, омлетом и кимчи", image: "img/kimchichikenkatsudon.png" },
+            { category: "ДОНБУРИ", name: "CHICKEN KATSUDON", description: "Рис с жареной куриной котлетой и яйцом", image: "img/chkd.png" },
+            { category: "ДОНБУРИ", name: "CHICKEN TERIYAKI DON", description: "Курица в соусе терияки в чашке с рисом", image: "img/chtd.png" },
+            { category: "ДОНБУРИ", name: "VEGETARIAN DON", description: "Рис с овощами (намуль, шпинат, огурец, ростки сои, маринованный имбирь)", image: "img/vegdon.png" },
+            { category: "ДОНБУРИ", name: "CHICKEN KATSU TERIYAKI DON", description: "Куриная котлета в панировке в соусе терияки в чашке с рисом", image: "img/chktd.png" },
+            { category: "ДОНБУРИ", name: "OYAKODON", description: "Чашка риса с тушеной курицей, яйцом и луком", image: "img/oyakodon.png" },
+
+            // РЫБА (Fish, Pages 13-14)
+            { category: "РЫБА", name: "SABA (Fried on grill)", description: "Жареная на гриле скумбрия", image: "img/saba.png" },
+            { category: "РЫБА", name: "SABA NO HIRAK", description: "Жареная на гриле сушеная скумбрия", image: "img/sabanohirak.png" },
+            { category: "РЫБА", name: "GOMASABA", description: "Жареная скумбрия в кунжутной заправке с луком", image: "img/gomasaba.png" },
+            { category: "РЫБА", name: "SUZUKI NITSUKE", description: "Томлёный сибас в полусладком соевом соусе", image: "img/suzukinitsuke.png" },
+            { category: "РЫБА", name: "YAKIMESHI", description: "Жареный рис с лососем, креветками и овощами", image: "img/yakimeshi.png" },
+            { category: "РЫБА", name: "SHAKE PONZU/MISO", description: "Запечённая лосось в фольге в соусе мисо или понзу", image: "img/shakeponzumiso.png" },
+            { category: "РЫБА", name: "SALMON TERIYAKI", description: "Стейк из лосося средней прожарки в соусе терияки", image: "img/salmonteriyaki.png" },
+
+            // МЯСО (BEEF, Page 15)
+            { category: "МЯСО", name: "BEEF SHOUGAYAKI/TERIYAKI DON", description: "Чашка риса с говядиной бон филе, обжаренной в имбирном/терияки соусе", image: "img/shougayakiteriyakidon.png" },
+            { category: "МЯСО", name: "BEEF SHOUGAYAKI/TERIYAKI", description: "Говядина бон филе, обжаренная в имбирном/терияки соусе", image: "img/bfshougayakiteriyaki.png" },
+            { category: "МЯСО", name: "BEEF KATSU", description: "Говядина средней прожарки под соусом демиглас", image: "img/bfkatsu.png" },
+
+            // КУРИЦА (CHIKEN, Page 16)
+            { category: "КУРИЦА", name: "CHICKEN TERIYAKI (Main)", description: "Курица в соусе терияки", image: "img/chikenteriyaki.png" },
+            { category: "КУРИЦА", name: "CHICKEN NANBAN", description: "Жареная курица, приправленная соусом тар-тар", image: "img/chikennanban.png" },
+            { category: "КУРИЦА", name: "CHICKEN KATSU (Main)", description: "Куриная котлета в панировочных сухарях с соусом тонкацу", image: "img/chikenkatsu.png" },
+            { category: "КУРИЦА", name: "KARAAGE (Chicken)", description: "Хрустящая жареная курица в кляре", image: "img/karaage.png" },
+            { category: "КУРИЦА", name: "SUDORI", description: "Курица и овощи в кисло-остром или кисло-сладком соусе", image: "img/sudori.png" },
+
+            // ДРУГИЕ ОСНОВНЫЕ БЛЮДА (OTHERS, Page 17)
+            { category: "ДРУГИЕ ОСНОВНЫЕ БЛЮДА", name: "GYOZA", description: "Жареные пельмени с овощами и говядиной", image: "img/gyouza.png" },
+            { category: "ДРУГИЕ ОСНОВНЫЕ БЛЮДА", name: "CURRY RICE", description: "Рис с подливом карри", image: "img/curryrice.png" },
+            { category: "ДРУГИЕ ОСНОВНЫЕ БЛЮДА", name: "CHICKEN CURRY", description: "Рис с подливом карри и куриной котлетой", image: "img/chikencurry.png" },
+            { category: "ДРУГИЕ ОСНОВНЫЕ БЛЮДА", name: "KOROKKE CURRY", description: "Рис с подливом карри и картофельной котлетой (с говядиной)", image: "img/korokkecurry.png" },
+            { category: "ДРУГИЕ ОСНОВНЫЕ БЛЮДА", name: "KOROKKE (Main)", description: "Картофельные котлеты с говядиной под соусом тонкацу", image: "img/korokke.png" },
+            { category: "ДРУГИЕ ОСНОВНЫЕ БЛЮДА", name: "CHA-HAN", description: "Жареный рис с яйцом, овощами и курицей", image: "img/chahan.png" },
+            { category: "ДРУГИЕ ОСНОВНЫЕ БЛЮДА", name: "YAKISOBA", description: "Жареная тонкая пшеничная лапша в соусе с овощами и курицей", image: "img/yakisoba.png" },
+
+            // ГАРНИРЫ/СЕТЫ (Sides, Page 18)
+            { category: "ГАРНИРЫ/СЕТЫ", name: "GOHAN set", description: "Сет: Суп мисо, рис, сушеные водоросли, соевый соус", image: "img/gohanset.png" },
+            { category: "ГАРНИРЫ/СЕТЫ", name: "ONIGIRI set", description: "Сет: Мисо суп, онигири (рисовые колобки с начинкой)", image: "img/onigiriset.png" },
+
+            // ДЕСЕРТЫ (Dessert, Page 19)
+            { category: "ДЕСЕРТЫ", name: "SEASONAL FRUIT PARFAIT", description: "Парфе с сезонными фруктами", image: "img/parfait.png" },
+            { category: "ДЕСЕРТЫ", name: "MATCHA CHEESE CAKE", description: "Чизкейк с матчей", image: "img/matchacheescake.png" },
+            { category: "ДЕСЕРТЫ", name: "HOUJICHA PUDDING", description: "Пудинг Ходзича (копченый зеленый чай)", image: "img/houjichapudding.png" },
+            { category: "ДЕСЕРТЫ", name: "CHOCOLATE TERRINE", description: "Шоколадный террин", image: "img/chocolateterrine.png" },
+            { category: "ДЕСЕРТЫ", name: "CREPE WRAPPED MOCHI AND SOY ICE CREAM", description: "Креп с моти и соевым мороженым", image: "img/crepe.png" },
+            { category: "ДЕСЕРТЫ", name: "PUDDING AND COFFEE JELLY", description: "Пудинг и кофейное желе", image: "img/puddingcoffeejelly.png" },
+            { category: "ДЕСЕРТЫ", name: "CARAMEL MOUSSE AND SEASONAL FRUIT", description: "Карамельный мусс и сезонные фрукты", image: "img/caramelmousse.png" },
+        ];
+        
+         // Добавляем заглушки для достижения 100 и даем им категорию
+        let finalDishes = [...dishes];
+        let placeholderCount = 1;
+        while (finalDishes.length < 100) {
+             finalDishes.push({
+                category: "ЗАГЛУШКА",
+                name: `ЗАГЛУШКА БЛЮДО ${placeholderCount}`,
+                description: `Это временное блюдо для достижения 100 позиций. Удалите/замените его.`,
+                image: "https://placehold.co/600x400/CCCCCC/333333?text=ЗАГЛУШКА"
+            });
+            placeholderCount++;
+        }
+        
+        const allCategories = [...new Set(finalDishes.map(d => d.category))].sort();
+
+        // --- 2. ПЕРЕМЕННЫЕ СОСТОЯНИЯ КВИЗА ---
+        let currentQuizIndex = 0;
+        let score = 0;
+        let quizActive = true;
+        let currentQuizSet = []; // Блюда, отобранные для текущего квиза
+        let totalQuestions = 0;
+        let selectedQuantity = 'ALL'; // По умолчанию "Все"
+
+        // --- 3. DOM ЭЛЕМЕНТЫ ---
+        const startScreenEl = document.getElementById('start-screen');
+        const quizContainerEl = document.getElementById('quiz-container');
+        const categorySelectEl = document.getElementById('category-select');
+        const quantityOptionsEl = document.getElementById('quantity-options');
+        const startQuizButtonEl = document.getElementById('start-quiz-button');
+        const selectedCountInfoEl = document.getElementById('selected-count-info');
+        
+        const imageEl = document.getElementById('dish-image');
+        const optionsContainerEl = document.getElementById('options-container');
+        const nextButtonEl = document.getElementById('next-button');
+        const currentIndexEl = document.getElementById('current-index');
+        const totalQuestionsEl = document.getElementById('total-questions');
+        const resultsModalEl = document.getElementById('results-modal');
+        const finalScoreEl = document.getElementById('final-score');
+        const maxScoreEl = document.getElementById('max-score');
+        const restartButtonEl = document.getElementById('restart-button');
+
+        // --- 4. ФУНКЦИИ УТИЛИТЫ ---
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [
+                    array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function getRandomOptions(correctDish) {
+            // Ищем неправильные ответы среди ВСЕГО массива блюд (finalDishes)
+            // чтобы усложнить выбор, даже если режим по категории.
+            const incorrectOptions = finalDishes.filter(dish => dish.name !== correctDish.name);
+            shuffleArray(incorrectOptions);
+            return incorrectOptions.slice(0, 3);
+        }
+
+        // --- 5. ЛОГИКА ЭКРАНОВ ---
+        function showStartScreen() {
+            quizContainerEl.classList.add('hidden');
+            startScreenEl.classList.remove('hidden');
+            resultsModalEl.classList.add('hidden');
+            resultsModalEl.classList.remove('flex');
+            updateSelectionInfo();
+        }
+
+        function showQuizScreen() {
+            startScreenEl.classList.add('hidden');
+            quizContainerEl.classList.remove('hidden');
+        }
+
+        function updateSelectionInfo() {
+            const selectedCategory = categorySelectEl.value;
+            let availableDishes = finalDishes;
+
+            if (selectedCategory !== 'ALL') {
+                availableDishes = finalDishes.filter(dish => dish.category === selectedCategory);
+            }
+
+            const maxAvailable = availableDishes.length;
+            let count = maxAvailable;
+
+            if (selectedQuantity !== 'ALL') {
+                const quantityNum = parseInt(selectedQuantity);
+                count = Math.min(quantityNum, maxAvailable);
+            }
+            
+            selectedCountInfoEl.textContent = `Выбрано: ${count} вопросов (макс. в категории: ${maxAvailable})`;
+        }
+
+        function setupCategoryOptions() {
+            allCategories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = `${category} (${finalDishes.filter(d => d.category === category).length})`;
+                categorySelectEl.appendChild(option);
+            });
+            categorySelectEl.addEventListener('change', updateSelectionInfo);
+        }
+        
+        // --- 6. ОСНОВНАЯ ЛОГИКА КВИЗА ---
+
+        function startQuiz() {
+            const selectedCategory = categorySelectEl.value;
+            const quantity = selectedQuantity;
+            
+            let filteredDishes = finalDishes;
+
+            // 1. Фильтрация по категории
+            if (selectedCategory !== 'ALL') {
+                filteredDishes = finalDishes.filter(dish => dish.category === selectedCategory);
+            }
+
+            // 2. Перемешивание
+            shuffleArray(filteredDishes);
+
+            // 3. Ограничение по количеству
+            if (quantity !== 'ALL') {
+                const quantityNum = parseInt(quantity);
+                currentQuizSet = filteredDishes.slice(0, quantityNum);
+            } else {
+                currentQuizSet = filteredDishes;
+            }
+
+            totalQuestions = currentQuizSet.length;
+            if (totalQuestions === 0) {
+                 // Вместо alert() используем модальное окно или встроенное сообщение
+                 alert('В этой категории нет блюд. Пожалуйста, выберите другую.');
+                 return;
+            }
+
+            // Инициализация квиза
+            currentQuizIndex = 0;
+            score = 0;
+            quizActive = true;
+            totalQuestionsEl.textContent = totalQuestions;
+
+            showQuizScreen();
+            loadQuiz();
+        }
+
+        function loadQuiz() {
+            if (currentQuizIndex >= totalQuestions) {
+                showResults();
+                return;
+            }
+
+            const currentDish = currentQuizSet[currentQuizIndex];
+            const incorrectOptions = getRandomOptions(currentDish);
+            
+            let options = [...incorrectOptions, currentDish];
+            options = shuffleArray(options);
+            
+            // Обновляем UI
+            currentIndexEl.textContent = currentQuizIndex + 1;
+            imageEl.src = currentDish.image;
+            optionsContainerEl.innerHTML = '';
+            
+            quizActive = true;
+            nextButtonEl.disabled = true;
+
+            // Создаем кнопки вариантов ответов
+            options.forEach(option => {
+                const button = document.createElement('button');
+                
+                // Сохраняем данные в дата-атрибутах
+                button.dataset.name = option.name;
+                button.dataset.description = option.description;
+                button.dataset.correct = (option.name === currentDish.name);
+
+                // Изначально показываем только название
+                button.innerHTML = `<span class="text-xl font-bold">${option.name}</span>`;
+
+                button.className = 'option-button w-full py-3 px-4 text-left border-2 border-indigo-200 rounded-lg text-gray-800 bg-white hover:bg-indigo-50 transition duration-150 ease-in-out';
+                button.onclick = () => checkAnswer(button);
+                optionsContainerEl.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selectedButton) {
+            if (!quizActive) return;
+
+            quizActive = false;
+            nextButtonEl.disabled = false;
+
+            const isCorrect = selectedButton.dataset.correct === 'true';
+            
+            const allButtons = optionsContainerEl.querySelectorAll('button');
+            
+            allButtons.forEach(button => {
+                // 1. Блокируем кнопку
+                button.disabled = true;
+                button.classList.add('disabled');
+                
+                const isThisCorrect = button.dataset.correct === 'true';
+                
+                // 2. Раскрываем описание
+                const name = button.dataset.name;
+                const description = button.dataset.description;
+
+                // Обновляем HTML кнопки, чтобы показать и название, и описание
+                button.innerHTML = `
+                    <div class="flex flex-col w-full">
+                        <span class="text-lg font-bold">${name}</span>
+                        <span class="text-sm opacity-90 mt-1">${description}</span>
+                    </div>
+                `;
+
+                // 3. Применяем подсветку
+                if (isThisCorrect) {
+                    // Правильный ответ всегда зеленый
+                    button.classList.add('correct');
+                } else if (button === selectedButton && !isThisCorrect) {
+                    // Неправильный выбранный ответ всегда красный
+                    button.classList.add('incorrect');
+                }
+            });
+
+            if (isCorrect) {
+                score++;
+            }
+        }
+
+        function nextQuiz() {
+            currentQuizIndex++;
+            loadQuiz();
+        }
+
+        function showResults() {
+            finalScoreEl.textContent = score;
+            maxScoreEl.textContent = totalQuestions;
+            resultsModalEl.classList.remove('hidden');
+            resultsModalEl.classList.add('flex');
+        }
+
+        // --- 7. ОБРАБОТЧИКИ СОБЫТИЙ ---
+        
+        // Обработчики выбора количества
+        quantityOptionsEl.querySelectorAll('.quantity-button').forEach(button => {
+            button.addEventListener('click', function() {
+                // Сброс стилей
+                quantityOptionsEl.querySelectorAll('.quantity-button').forEach(btn => {
+                    btn.classList.remove('bg-indigo-500', 'text-white', 'hover:bg-indigo-600');
+                    btn.classList.add('bg-indigo-100', 'text-indigo-700', 'hover:bg-indigo-200');
+                });
+                // Установка новых стилей
+                this.classList.remove('bg-indigo-100', 'text-indigo-700', 'hover:bg-indigo-200');
+                this.classList.add('bg-indigo-500', 'text-white', 'hover:bg-indigo-600');
+                
+                selectedQuantity = this.dataset.quantity;
+                updateSelectionInfo();
+            });
+        });
+
+        // Основные кнопки
+        startQuizButtonEl.addEventListener('click', startQuiz);
+        nextButtonEl.addEventListener('click', nextQuiz);
+        restartButtonEl.addEventListener('click', showStartScreen); // Возвращаемся на экран выбора
+
+        // Инициализация при загрузке
+        window.onload = () => {
+            setupCategoryOptions();
+            showStartScreen(); // Начинаем с экрана выбора режима
+        };
+    </script>
+</body>
+</html>
