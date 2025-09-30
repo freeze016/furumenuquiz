@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Квиз по меню 居瑠団 (Режимы, Адаптивность)</title>
+    <title>Квиз по меню 居瑠団 (V5: Категории и Опции)</title>
     <!-- Загрузка Tailwind CSS для стилизации -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -46,18 +46,15 @@
             opacity: 0.9;
             cursor: not-allowed;
         }
-        /* Измененный стиль для контейнера изображения, чтобы обеспечить гибкость */
+        /* Стиль для контейнера изображения: содержит изображение, сохраняя его аспект */
         #dish-image-container {
-             /* Минимальная высота на моб. устройствах, чтобы не было слишком маленьким */
             min-height: 16rem; 
-            /* Максимальная высота для больших экранов */
             max-height: 24rem; 
         }
-        /* Изображение будет содержаться (contain) внутри контейнера, сохраняя аспект */
         #dish-image {
             max-width: 100%;
             max-height: 100%;
-            object-fit: contain; /* Ключевое изменение: объект будет полностью помещаться, не обрезаясь */
+            object-fit: contain; /* Сохраняет соотношение сторон и полностью помещает изображение */
         }
     </style>
 </head>
@@ -66,7 +63,7 @@
     <!-- Главный контейнер -->
     <div class="w-full max-w-2xl bg-white rounded-xl shadow-2xl p-6 md:p-8">
         
-        <h1 class="text-3xl font-bold text-gray-800 text-center mb-6">Квиз: Учим Меню (100 блюд)</h1>
+        <h1 class="text-3xl font-bold text-gray-800 text-center mb-6">Квиз: Учим Меню (82 блюда)</h1>
         
         <!-- 1. СТАРТОВЫЙ ЭКРАН -->
         <div id="start-screen" class="space-y-6">
@@ -76,7 +73,7 @@
             <div>
                 <label for="category-select" class="block text-lg font-medium text-gray-700 mb-2">Категория блюд:</label>
                 <select id="category-select" class="w-full p-3 border-2 border-indigo-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150">
-                    <option value="ALL">Все блюда (100)</option>
+                    <option value="ALL">Все блюда (82)</option>
                     <!-- Опции будут добавлены через JS -->
                 </select>
             </div>
@@ -89,7 +86,7 @@
                     <button data-quantity="50" class="quantity-button py-3 px-4 bg-indigo-100 text-indigo-700 font-semibold rounded-lg hover:bg-indigo-200 transition duration-150 border-2 border-transparent focus:border-indigo-500">50</button>
                     <button data-quantity="ALL" class="quantity-button py-3 px-4 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-600 transition duration-150 border-2 border-transparent">Все</button>
                 </div>
-                <p id="selected-count-info" class="text-sm text-gray-500 mt-2">Выбрано: 100 вопросов</p>
+                <p id="selected-count-info" class="text-sm text-gray-500 mt-2">Выбрано: 82 вопросов</p>
             </div>
 
             <!-- Кнопка старта -->
@@ -102,7 +99,7 @@
         <div id="quiz-container" class="space-y-6 hidden">
             <!-- Счёт и прогресс -->
             <div id="progress" class="text-center text-sm font-medium text-gray-600">
-                Вопрос <span id="current-index">1</span> из <span id="total-questions">100</span>
+                Вопрос <span id="current-index">1</span> из <span id="total-questions">82</span>
             </div>
 
             <!-- Область отображения блюда -->
@@ -164,7 +161,7 @@
             { category: "САЛАТЫ", name: "RUCKOLA SALAD", description: "Руккола, овощи по-сезону", image: "img/ruckolasld.png" },
             { category: "САЛАТЫ", name: "SABA SALAD", description: "Маринованная скумбрия и овощи по сезону", image: "img/sabasld.png" },
             { category: "САЛАТЫ", name: "SAMARA SALAD", description: "Черный гриб, шпинат, маринованный редис, горчичный соус", image: "img/samarasld.png" },
-            { category: "САЛАТЫ", name: "SUNOMONO", description: "Огурцы и водоросли заправленные уксусом и имбирем", image: "img/sunomomo.png" },
+            { category: "САЛАТЫ", name: "SUNOMONO", description: "Огурцы и водоросли заправленные уксусом и имбирем", image: "img/sunomono.png" },
             { category: "САЛАТЫ", name: "ONION SALAD", description: "Луковый салат с рыбными стружками и хрустиками", image: "img/onionsld.png" },
             { category: "САЛАТЫ", name: "ROAST BEEF SALAD", description: "Ростбиф и сезонные овощи, заправленные соусом васаби", image: "img/roastbfsld.png" },
             { category: "САЛАТЫ", name: "NORIMAKI SALAD", description: "Овощи, курица, водоросли. Заверните свой ролл", image: "img/norimakisld.png" },
@@ -178,9 +175,9 @@
             // РАМЕН (Ramen, Page 8)
             { category: "РАМЕН", name: "OYAKATA RAMEN", description: "Суп на бульоне из рыбы, курицы, соевого соуса и грибов с говядиной/курицей", image: "img/oyakataramen.png" },
             { category: "РАМЕН", name: "TAN-TAN MEN", description: "Острый суп-лапша с рубленной говядиной/курицей и имбирем", image: "img/tantanmen.png" },
-            { category: "РАМЕН", name: "GYUKOTYSU RAMEN", description: "Суп-лапша с наваристым говяжьим бульоном, мясом чашу, грибами и яйцом", image: "img/gyukotsuramen.png" },
+            { category: "РАМЕН", name: "GYUKOTYSU RAMEN", description: "Суп-лапша с наваристым говяжьим бульоном, мясом чашу, грибами и яйцом", image: "img/gtokotsuramen.png" },
             { category: "РАМЕН", name: "MISO RAMEN", description: "Острый суп с лапшой и овощами на бульоне мисо с курицей/морепродуктами", image: "img/misoramen.png" },
-            { category: "РАМЕН", name: "SANRAATAN", description: "Кисло-Острый суп с лапшой, тофу, яйцом, овощами и курицейя/морепродуктами", image: "img/snrataan.png" },
+            { category: "РАМЕН", name: "SANRAATAN", description: "Кисло-Острый суп с лапшой, тофу, яйцом, овощами и курицейя/морепродуктами", image: "img/sanrataan.png" },
 
             // УДОН В КОТЕЛКЕ (Nabeyaki Udon, Page 9)
             { category: "УДОН В КОТЕЛКЕ", name: "NABEYAKI UDON", description: "Суп в котелке с удоном, крабовыми палочками, креветками, курицей, овощами и яйцом", image: "img/nu.png" },
@@ -215,7 +212,7 @@
             { category: "РЫБА", name: "SABA (Fried on grill)", description: "Жареная на гриле скумбрия", image: "img/saba.png" },
             { category: "РЫБА", name: "SABA NO HIRAK", description: "Жареная на гриле сушеная скумбрия", image: "img/sabanohirak.png" },
             { category: "РЫБА", name: "GOMASABA", description: "Жареная скумбрия в кунжутной заправке с луком", image: "img/gomasaba.png" },
-            { category: "РЫБА", name: "SUZUKI NITSUKE", description: "Томлёный сибас в полусладком соевом соусе", image: "img/suzukinitsuke.png" },
+            { category: "РЫБА", name: "SUZUKI NITSUKE", description: "Томлёный сибас в полусладком соевом соусе", image: "img/suzukinatsuke.png" },
             { category: "РЫБА", name: "YAKIMESHI", description: "Жареный рис с лососем, креветками и овощами", image: "img/yakimeshi.png" },
             { category: "РЫБА", name: "SHAKE PONZU/MISO", description: "Запечённая лосось в фольге в соусе мисо или понзу", image: "img/shakeponzumiso.png" },
             { category: "РЫБА", name: "SALMON TERIYAKI", description: "Стейк из лосося средней прожарки в соусе терияки", image: "img/salmonteriyaki.png" },
@@ -255,18 +252,8 @@
             { category: "ДЕСЕРТЫ", name: "CARAMEL MOUSSE AND SEASONAL FRUIT", description: "Карамельный мусс и сезонные фрукты", image: "img/caramelmousse.png" },
         ];
         
-         // Добавляем заглушки для достижения 100 и даем им категорию
-        let finalDishes = [...dishes];
-        let placeholderCount = 1;
-        while (finalDishes.length < 100) {
-             finalDishes.push({
-                category: "ЗАГЛУШКА",
-                name: `ЗАГЛУШКА БЛЮДО ${placeholderCount}`,
-                description: `Это временное блюдо для достижения 100 позиций. Удалите/замените его.`,
-                image: "https://placehold.co/600x400/CCCCCC/333333?text=ЗАГЛУШКА"
-            });
-            placeholderCount++;
-        }
+        // Используем только реальные блюда
+        const finalDishes = dishes; 
         
         const allCategories = [...new Set(finalDishes.map(d => d.category))].sort();
 
@@ -308,12 +295,22 @@
             return array;
         }
 
-        function getRandomOptions(correctDish) {
-            // Ищем неправильные ответы среди ВСЕГО массива блюд (finalDishes)
-            // чтобы усложнить выбор, даже если режим по категории.
-            const incorrectOptions = finalDishes.filter(dish => dish.name !== correctDish.name);
+        /**
+         * Выбирает до 3-х неправильных вариантов из заданного пула.
+         * Пул должен быть отфильтрован по категории для режима "по категориям".
+         * @param {Object} correctDish - Правильное блюдо.
+         * @param {Array<Object>} dishPool - Набор блюд, из которых можно выбирать варианты.
+         * @returns {Array<Object>} Массив неправильных блюд (макс. 3).
+         */
+        function getRandomOptions(correctDish, dishPool) {
+            // Ищем неправильные ответы только среди блюд в текущем пуле
+            const incorrectOptions = dishPool.filter(dish => dish.name !== correctDish.name);
             shuffleArray(incorrectOptions);
-            return incorrectOptions.slice(0, 3);
+            
+            // Если в пуле всего 4 или более блюд, выберем 3. Иначе выберем все, что есть, кроме правильного.
+            const optionsCount = Math.min(3, incorrectOptions.length); 
+
+            return incorrectOptions.slice(0, optionsCount);
         }
 
         // --- 5. ЛОГИКА ЭКРАНОВ ---
@@ -330,13 +327,16 @@
             quizContainerEl.classList.remove('hidden');
         }
 
+        function getFilteredDishes(selectedCategory) {
+            if (selectedCategory !== 'ALL') {
+                return finalDishes.filter(dish => dish.category === selectedCategory);
+            }
+            return finalDishes;
+        }
+
         function updateSelectionInfo() {
             const selectedCategory = categorySelectEl.value;
-            let availableDishes = finalDishes;
-
-            if (selectedCategory !== 'ALL') {
-                availableDishes = finalDishes.filter(dish => dish.category === selectedCategory);
-            }
+            const availableDishes = getFilteredDishes(selectedCategory);
 
             const maxAvailable = availableDishes.length;
             let count = maxAvailable;
@@ -350,10 +350,14 @@
         }
 
         function setupCategoryOptions() {
+            // Очищаем существующие опции, кроме "Все блюда"
+            categorySelectEl.innerHTML = '<option value="ALL">Все блюда (82)</option>';
+            
             allCategories.forEach(category => {
+                const count = finalDishes.filter(d => d.category === category).length;
                 const option = document.createElement('option');
                 option.value = category;
-                option.textContent = `${category} (${finalDishes.filter(d => d.category === category).length})`;
+                option.textContent = `${category} (${count})`;
                 categorySelectEl.appendChild(option);
             });
             categorySelectEl.addEventListener('change', updateSelectionInfo);
@@ -365,17 +369,12 @@
             const selectedCategory = categorySelectEl.value;
             const quantity = selectedQuantity;
             
-            let filteredDishes = finalDishes;
+            let filteredDishes = getFilteredDishes(selectedCategory);
 
-            // 1. Фильтрация по категории
-            if (selectedCategory !== 'ALL') {
-                filteredDishes = finalDishes.filter(dish => dish.category === selectedCategory);
-            }
-
-            // 2. Перемешивание
+            // 1. Перемешивание
             shuffleArray(filteredDishes);
 
-            // 3. Ограничение по количеству
+            // 2. Ограничение по количеству
             if (quantity !== 'ALL') {
                 const quantityNum = parseInt(quantity);
                 currentQuizSet = filteredDishes.slice(0, quantityNum);
@@ -385,7 +384,6 @@
 
             totalQuestions = currentQuizSet.length;
             if (totalQuestions === 0) {
-                 // Вместо alert() используем модальное окно или встроенное сообщение
                  alert('В этой категории нет блюд. Пожалуйста, выберите другую.');
                  return;
             }
@@ -407,7 +405,10 @@
             }
 
             const currentDish = currentQuizSet[currentQuizIndex];
-            const incorrectOptions = getRandomOptions(currentDish);
+            
+            // Выбираем неправильные ответы ТОЛЬКО из текущего набора currentQuizSet,
+            // что гарантирует, что они из той же категории (или из всего меню, если ALL).
+            const incorrectOptions = getRandomOptions(currentDish, currentQuizSet);
             
             let options = [...incorrectOptions, currentDish];
             options = shuffleArray(options);
@@ -436,6 +437,23 @@
                 button.onclick = () => checkAnswer(button);
                 optionsContainerEl.appendChild(button);
             });
+            
+            // Если вариантов ответа меньше четырех (например, в категории всего 3 блюда), 
+            // отключаем кнопки, если ответ не однозначен, и показываем подсказку
+            if (options.length < 4) {
+                 const currentDishCategory = currentQuizSet[0].category;
+                 const categorySize = getFilteredDishes(currentDishCategory).length;
+
+                 if (categorySize <= 1) {
+                     // Если в категории 1 или 0 блюд, то это не квиз.
+                      optionsContainerEl.innerHTML = `<p class="text-red-500 text-center font-semibold">Недостаточно блюд для квиза в категории: ${currentDishCategory} (${categorySize} шт.)</p>`;
+                      nextButtonEl.disabled = false; // Позволяем перейти дальше
+                      quizActive = false;
+                 } else {
+                     // Можно добавить пояснение, если меньше 4 вариантов
+                    // (Обычно это не нужно, но можно оставить как опцию)
+                 }
+            }
         }
 
         function checkAnswer(selectedButton) {
@@ -526,3 +544,4 @@
     </script>
 </body>
 </html>
+
